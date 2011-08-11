@@ -1,4 +1,4 @@
-function It($name, [ScriptBlock] $test) 
+function It($name, [ScriptBlock] $test, [Type] $expectExceptionOfType) 
 {
     $results = Get-GlobalTestResults
     $margin = " " * $results.TestDepth
@@ -14,22 +14,34 @@ function It($name, [ScriptBlock] $test)
     . $TestDrive\temp.ps1
 
     Start-PesterConsoleTranscript
-    try{
+    try {
         temp
-        $output | Write-Host -ForegroundColor green;
-    } catch {
-        $failure_message = $_.toString() -replace "Exception calling", "Assert failed on"
-        $temp_line_number =  $_.InvocationInfo.ScriptLineNumber - 2
-        $failure_line_number = $start_line_position + $temp_line_number
+    } 
+	catch {
+		if($_.GetType() -eq 'PesterFailure') {
+			$failure_message = $_.toString() -replace "Exception calling", "Assert failed on"
+		}
+		else {
+			$failure_message = $_.toString()
+		}
+		
+		if($expectExceptionOfType -ne $null -and $_.Exception -is $expectExceptionOfType) {
+			$output | Write-Host -ForegroundColor green;
+		}
+		else {
+			$temp_line_number =  $_.InvocationInfo.ScriptLineNumber - 2
+			$failure_line_number = $start_line_position + $temp_line_number
 
-        $results.FailedTests += $name
-        $output | Write-Host -ForegroundColor red
+			$results.FailedTests += $name
+			$output | Write-Host -ForegroundColor red
 
-        Write-Host -ForegroundColor red $error_margin$failure_message
-        Write-Host -ForegroundColor red $error_margin$error_margin"at line: $failure_line_number in  $test_file"
+			Write-Host -ForegroundColor red $error_margin$failure_message
+			Write-Host -ForegroundColor red $error_margin$error_margin"at line: $failure_line_number in  $test_file"
+		}
     }
-
-    Stop-PesterConsoleTranscript
+	finally {
+		Stop-PesterConsoleTranscript
+	}
 }
 
 function Start-PesterConsoleTranscript {
