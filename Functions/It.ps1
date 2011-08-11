@@ -16,6 +16,7 @@ function It($name, [ScriptBlock] $test, [Type] $expectExceptionOfType)
     Start-PesterConsoleTranscript
     try {
         temp
+		$output | Write-Host -ForegroundColor green;
     } 
 	catch {
 		if($_.GetType() -eq 'PesterFailure') {
