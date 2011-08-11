@@ -18,7 +18,7 @@ function It($name, [ScriptBlock] $test)
         temp
         $output | Write-Host -ForegroundColor green;
     } 
-	catch {
+	catch [PesterFailure] {
         $failure_message = $_.toString() -replace "Exception calling", "Assert failed on"
         $temp_line_number =  $_.InvocationInfo.ScriptLineNumber - 2
         $failure_line_number = $start_line_position + $temp_line_number
