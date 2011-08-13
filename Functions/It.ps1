@@ -43,6 +43,9 @@ function It($name, [ScriptBlock] $test, [Type] $expectExceptionOfType)
 	finally {
 		Stop-PesterConsoleTranscript
 	}
+	if($global:Pester_EnableAutoConsoleText) {
+		Get-ConsoleText | Write-Host
+	}
 }
 
 function Start-PesterConsoleTranscript {
