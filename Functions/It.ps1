@@ -30,6 +30,10 @@ function It($name, [ScriptBlock] $test)
     }
 
     Stop-PesterConsoleTranscript
+
+	if($global:Pester_EnableAutoConsoleText) {
+		Get-ConsoleText | Write-Host
+	}    
 }
 
 function Start-PesterConsoleTranscript {
