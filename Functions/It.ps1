@@ -10,24 +10,35 @@ function It($name, [ScriptBlock] $test, [Type] $expectExceptionOfType)
     $start_line_position = $test.StartPosition.StartLine
     $test_file = $test.File
 
+    $exceptionWasCaught = $false
+    $expectedExceptionWasCaught = $false
+
     Setup-TestFunction
     . $TestDrive\temp.ps1
 
     Start-PesterConsoleTranscript
     try {
         temp
-		$output | Write-Host -ForegroundColor green;
     } 
 	catch {
+        $exceptionWasCaught = $true
+
 		if($_.GetType() -eq 'PesterFailure') {
 			$failure_message = $_.toString() -replace "Exception calling", "Assert failed on"
 		}
 		else {
-			$failure_message = $_.toString()
+            if($expectExceptionOfType -ne $null -and $_.Exception -isnot $expectExceptionOfType)
+            {
+                $caughtTypeName = $_.Exception.GetType().Name
+                $failure_message = "Expected exception of type $expectExceptionOfType but caught $caughtTypeName instead."
+            }
+            else {
+    			$failure_message = $_.toString()
+            }
 		}
 		
 		if($expectExceptionOfType -ne $null -and $_.Exception -is $expectExceptionOfType) {
-			$output | Write-Host -ForegroundColor green;
+            $expectedExceptionWasCaught = $true
 		}
 		else {
 			$temp_line_number =  $_.InvocationInfo.ScriptLineNumber - 2
@@ -41,6 +52,19 @@ function It($name, [ScriptBlock] $test, [Type] $expectExceptionOfType)
 		}
     }
 	finally {
+        if(($exceptionWasCaught -eq $false -and $expectExceptionOfType -eq $null) -or ($exceptionWasCaught -and $expectedExceptionWasCaught)) {
+        	$output | Write-Host -ForegroundColor green;
+        }
+        else
+        {
+            if($exceptionWasCaught -eq $false -and $expectExceptionOfType -ne $null)
+            {
+			    $output | Write-Host -ForegroundColor red 
+                $failure_message = "Expected exception of type $expectExceptionOfType but no exception was thrown."                
+    			Write-Host -ForegroundColor red $error_margin$failure_message
+            }
+        }
+
 		Stop-PesterConsoleTranscript
 	}
 	if($global:Pester_EnableAutoConsoleText) {
