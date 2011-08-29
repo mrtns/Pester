@@ -1,4 +1,5 @@
 $global:TestDrive = "$env:Temp\pester"
+$global:Pester_TestDriveAllowCleanup = $true
 
 function Initialize-Setup() {
     if (Test-Path TestDrive:) { return }
