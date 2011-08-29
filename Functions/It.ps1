@@ -31,6 +31,7 @@ function It($name, [ScriptBlock] $test, [Type] $expectExceptionOfType)
             {
                 $caughtTypeName = $_.Exception.GetType().Name
                 $failure_message = "Expected exception of type $expectExceptionOfType but caught $caughtTypeName instead."
+                # TODO: We want to include $_.ToString() in the failure message as well, in this case
             }
             else {
     			$failure_message = $_.toString()
